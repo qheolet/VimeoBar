@@ -3,6 +3,8 @@ var global = [];
 var ox = {}
 var videoNo = 0;
 var amountTime = 0;
+var countp = 0;
+var startFrom=0;
 
 function addToGlobalObject(o, i) {
     amountTime = amountTime + o.duration;
@@ -12,13 +14,34 @@ function addToGlobalObject(o, i) {
         setTimeout(function() {
             putVideo(0);
 
-           // console.log(global[0]);
+            // console.log(global[0]);
             $.each($('[part-no]'), function(i, v) {
+
                 var of = global[i];
                 var oi = of.duration / amountTime;
                 var ok = oi.toFixed(2) * 100;
+
+
+
                 $(this).css('width', ok + '%');
+                if (i > 0) {
+                    var point = ((countp / 100) * $('.barto').width()) - 11;
+                    $('.barto').append('<div class="point" point-no="' + i + '" style="left:' + point + 'px"></div>');
+                } else {
+                    $('.barto').append('<div class="point" point-no="0" style="left:0"></div>');
+                }
+                countp = countp + ok;
+
+                // console.log($(this).offset().left);
             });
+
+
+
+            // $('.barto').fadeIn('fast');
+
+
+
+
         }, 1000);
     }
 }
@@ -29,10 +52,44 @@ function setInfoForEvent() {
     // console.log(ox);
 }
 
+
+function notificationPlus(t) {
+	// console.log(startFrom+t/global[videoNo].duration/amountTime*100)
+	 $('.lineCounter').css('width', (startFrom+(global[videoNo].duration/amountTime)*(t/global[videoNo].duration*100)) + '%');
+}
+
+
+function notificationBarSet() {
+    var space = 0;
+    for (var i = 0; i < videoNo; i++) {
+        var of = global[i];
+        var oi = of.duration / amountTime;
+        var ok = oi.toFixed(2) * 100;
+        space = space + (ok);
+    };
+	startFrom = space;
+    $('.lineCounter').css('width', space + '%');
+}
+
+
+
+// function notificationBar(t){
+// 	
+// 	var completeWidth = $('.barto').width();
+// 	var videoLong = global[videoNo].duration;
+
+
+
+
+// }
+
 function putVideo(h) {
     videoNo = h;
     $('.iframe').html(global[h].html);
     setInfoForEvent();
+    $('.point').css('backgroundImage', 'url(images/miball.png)');
+    $('.point').eq(h).css('backgroundImage', 'url(images/bball.png)');
+    notificationBarSet();
 }
 
 $.each(listvideo, function(index, val) {
@@ -62,6 +119,13 @@ $(document).ready(function() {
 
         $('[part-no]').click(function(event) {
             putVideo(parseInt($(this).attr('part-no')));
+            // console.log(parseInt($(this).attr('part-no')));
+        });
+
+
+
+        $('.point').click(function(event) {
+            putVideo(parseInt($(this).attr('point-no')));
             // console.log(parseInt($(this).attr('part-no')));
         });
 
@@ -134,6 +198,8 @@ $(document).ready(function() {
 
         function onPlayProgress(data) {
             // $('.status').text(data.seconds + 's played');
+            notificationPlus(data.seconds);
+
         }
     }
 
